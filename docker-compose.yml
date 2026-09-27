@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: careerai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: careerai_user
+      POSTGRES_PASSWORD: careerai_password
+      POSTGRES_DB: careerai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: careerai-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://careerai_user:careerai_password@postgres:5432/careerai
+      - JWT_SECRET=careerai-super-secret-jwt-key-2026-production-ready-auth
+      - DEMO_MODE=true
+      - AI_PROVIDER=demo
+      - AI_API_KEY=
+      - CORS_ORIGINS=["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: careerai-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
