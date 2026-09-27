@@ -15,6 +15,7 @@ import { ResumesPage } from './pages/ResumesPage';
 import { JobsPage } from './pages/JobsPage';
 import { SavedJobsPage } from './pages/SavedJobsPage';
 import { SkillGapPage } from './pages/SkillGapPage';
+import { LearningHubPage } from './pages/LearningHubPage';
 import { InterviewPage } from './pages/InterviewPage';
 import { InterviewHistoryPage } from './pages/InterviewHistoryPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
@@ -70,7 +71,8 @@ const AppContent: React.FC = () => {
             {currentTab === 'resumes' && <ResumesPage />}
             {currentTab === 'jobs' && <JobsPage />}
             {currentTab === 'saved-jobs' && <SavedJobsPage onNavigate={handleNavigate} />}
-            {currentTab === 'skills' && <SkillGapPage />}
+            {currentTab === 'skills' && <SkillGapPage onNavigate={handleNavigate} />}
+            {currentTab === 'learning-hub' && <LearningHubPage onNavigate={handleNavigate} initialTopic={selectedContextId} />}
             {currentTab === 'interview' && <InterviewPage onNavigate={handleNavigate} initialInterviewId={selectedContextId} />}
             {currentTab === 'interview-history' && <InterviewHistoryPage onNavigate={handleNavigate} />}
             {currentTab === 'analytics' && <AnalyticsPage />}

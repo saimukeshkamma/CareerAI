@@ -151,6 +151,8 @@ export interface Interview {
   key_improvements?: string[];
   created_at: string;
   questions?: InterviewQuestion[];
+  weak_topics?: InterviewWeakTopic[];
+  strong_topics?: string[];
 }
 
 export interface InterviewHistoryItem {
@@ -184,6 +186,7 @@ export interface DashboardData {
   top_skill_gaps: SkillGapItem[];
   recent_interview_score?: number;
   career_insight: string;
+  recommended_learning?: PersonalizedLearningData;
 }
 
 export interface AnalyticsData {
@@ -203,4 +206,94 @@ export interface NotificationItem {
   link?: string;
   is_read: boolean;
   created_at: string;
+}
+
+export interface LearningVideo {
+  id: number;
+  topic_id: number;
+  video_id: string;
+  title: string;
+  channel_name: string;
+  channel_avatar?: string;
+  thumbnail_url: string;
+  description?: string;
+  duration?: string;
+  difficulty: string;
+  youtube_url: string;
+  view_count?: string;
+  teaching_style?: string;
+}
+
+export interface LearningTopicBrief {
+  id: number;
+  name: string;
+  slug: string;
+  category: string;
+  description: string;
+  difficulty: string;
+  subtopics: string[];
+  icon?: string;
+  video_count: number;
+  creators: string[];
+  user_status: string;
+  user_progress: number;
+  is_saved: boolean;
+}
+
+export interface LearningTopicDetail {
+  id: number;
+  name: string;
+  slug: string;
+  category: string;
+  description: string;
+  why_learn?: string;
+  difficulty: string;
+  subtopics: string[];
+  icon?: string;
+  videos: LearningVideo[];
+  user_status: string;
+  user_progress: number;
+  is_saved: boolean;
+  created_at: string;
+}
+
+export interface LearningCategory {
+  category: string;
+  topic_count: number;
+  icon?: string;
+  description?: string;
+}
+
+export interface UserLearningProgress {
+  id: number;
+  topic_id: number;
+  topic_name: string;
+  topic_slug: string;
+  category: string;
+  difficulty: string;
+  status: string;
+  progress: number;
+  is_saved: boolean;
+  video_count?: number;
+  last_accessed: string;
+}
+
+export interface InterviewWeakTopic {
+  id?: number;
+  topic_name: string;
+  score: number;
+  performance_level: string;
+  reason: string;
+  topic_slug?: string;
+  topic_id?: number;
+  recommended_videos: LearningVideo[];
+}
+
+export interface PersonalizedLearningData {
+  source: string;
+  weak_topics: InterviewWeakTopic[];
+  strong_topics: string[];
+  latest_interview_id?: number;
+  latest_interview_role?: string;
+  total_recommendations_count: number;
 }

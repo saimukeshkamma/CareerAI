@@ -140,3 +140,79 @@ def test_google_auth_signup_and_login(client):
 def test_google_auth_invalid(client):
     resp = client.post("/api/auth/google", json={})
     assert resp.status_code == 400
+
+def test_learning_categories(client):
+    auth_resp = client.post("/api/auth/demo-login/1")
+    token = auth_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.get("/api/learning/categories", headers=headers)
+    assert response.status_code == 200
+    categories = response.json()
+    assert len(categories) >= 6
+    cat_names = [c["category"] for c in categories]
+    assert "Programming" in cat_names
+    assert "Machine Learning" in cat_names
+    assert "Deep Learning" in cat_names
+
+def test_learning_topics_search_and_multiple_creators(client):
+    auth_resp = client.post("/api/auth/demo-login/1")
+    token = auth_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Search for backpropagation
+    response = client.get("/api/learning/topics?q=backpropagation", headers=headers)
+    assert response.status_code == 200
+    topics = response.json()
+    assert len(topics) >= 1
+    topic = topics[0]
+    assert topic["slug"] == "backpropagation"
+    assert len(topic["creators"]) >= 2
+
+    # Get topic detail
+    detail_resp = client.get(f"/api/learning/topics/{topic['slug']}", headers=headers)
+    assert detail_resp.status_code == 200
+    detail = detail_resp.json()
+    assert len(detail["videos"]) >= 3
+    channel_names = [v["channel_name"] for v in detail["videos"]]
+    # Verify multiple creators exist
+    assert len(set(channel_names)) >= 3
+    assert any("3Blue1Brown" in c or "StatQuest" in c for c in channel_names)
+
+def test_learning_for_you_recommendations(client):
+    auth_resp = client.post("/api/auth/demo-login/1")
+    token = auth_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.get("/api/learning/recommendations/for-you", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert "weak_topics" in data
+    assert len(data["weak_topics"]) >= 1
+    weak = data["weak_topics"][0]
+    assert "topic_name" in weak
+    assert "reason" in weak
+    assert len(weak["recommended_videos"]) >= 2
+
+def test_learning_progress_tracking(client):
+    auth_resp = client.post("/api/auth/demo-login/1")
+    token = auth_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Update progress
+    update_resp = client.post("/api/learning/progress", json={
+        "topic_id": 1,
+        "status": "IN_PROGRESS",
+        "progress": 65,
+        "is_saved": True
+    }, headers=headers)
+    assert update_resp.status_code == 200
+    assert update_resp.json()["progress"] == 65
+
+    # Check my-learning endpoint
+    my_resp = client.get("/api/learning/my-learning", headers=headers)
+    assert my_resp.status_code == 200
+    my_data = my_resp.json()
+    assert "in_progress" in my_data
+    assert "saved" in my_data
+    assert any(item["topic_id"] == 1 for item in my_data["in_progress"])

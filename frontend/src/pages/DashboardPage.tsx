@@ -5,7 +5,7 @@ import { DashboardData, Job } from '../types';
 import {
   Brain, FileText, Briefcase, Target, Mic,
   Sparkles, ArrowRight, CheckCircle2, TrendingUp,
-  Bookmark, ChevronRight
+  Bookmark, ChevronRight, Tv, BookOpen
 } from 'lucide-react';
 import { StatCard } from '../components/common/StatCard';
 import { ScoreRing } from '../components/common/ScoreRing';
@@ -141,6 +141,107 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
           icon={<Target className="w-5 h-5 text-emerald-400" />}
           badgeColor="emerald"
         />
+      </div>
+
+      {/* 🎯 AI Learning Recommendations Based on Interview */}
+      <div className="glass-card p-6 rounded-3xl border border-rose-500/30 bg-gradient-to-r from-rose-950/20 via-slate-900 to-indigo-950/20 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1">
+                <Tv className="w-3 h-3" />
+                AI Learning Hub
+              </span>
+              <span className="text-xs text-slate-400">Based on your latest mock interview</span>
+            </div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              🎯 Recommended For You
+            </h3>
+            <p className="text-xs text-slate-300 mt-0.5">
+              Focus on improving these concepts to boost your technical interview callback rate:
+            </p>
+          </div>
+
+          <button
+            onClick={() => onNavigate('learning-hub')}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-500/20 flex items-center gap-1.5 shrink-0"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Open Learning Hub</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Topics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          {(data.recommended_learning?.weak_topics && data.recommended_learning.weak_topics.length > 0) ? (
+            data.recommended_learning.weak_topics.slice(0, 3).map((w, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-rose-500/40 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">
+                      🔴 Needs Improvement
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold">{w.score}/100</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white line-clamp-1">{w.topic_name}</h4>
+                  <p className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                    {w.reason}
+                  </p>
+                </div>
+
+                <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-[10px] text-indigo-400 font-medium">Multiple Creators</span>
+                  <button
+                    onClick={() => onNavigate('learning-hub', w.topic_slug || w.topic_name)}
+                    className="text-xs font-bold text-blue-400 hover:text-white flex items-center gap-1"
+                  >
+                    <span>Start Learning</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            [
+              { name: "Backpropagation", score: 45, reason: "Explanation missed gradients & chain rule weight updates.", slug: "backpropagation" },
+              { name: "SQL Joins", score: 52, reason: "Difficulty explaining INNER vs LEFT JOIN on relational tables.", slug: "sql-joins" },
+              { name: "Overfitting & Bias-Variance", score: 60, reason: "Incomplete explanation of L1/L2 and Dropout regularization.", slug: "overfitting-underfitting" }
+            ].map((d, i) => (
+              <div
+                key={i}
+                className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-rose-500/40 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">
+                      🔴 Needs Improvement
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold">{d.score}/100</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white line-clamp-1">{d.name}</h4>
+                  <p className="text-[11px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                    {d.reason}
+                  </p>
+                </div>
+
+                <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between">
+                  <span className="text-[10px] text-indigo-400 font-medium">Multiple Creators</span>
+                  <button
+                    onClick={() => onNavigate('learning-hub', d.slug)}
+                    className="text-xs font-bold text-blue-400 hover:text-white flex items-center gap-1"
+                  >
+                    <span>Start Learning</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* 3. Middle Row: Career Progress Chart & Active Resume Card */}

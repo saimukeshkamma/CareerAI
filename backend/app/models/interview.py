@@ -31,6 +31,7 @@ class Interview(Base):
     user = relationship("User", back_populates="interviews")
     resume = relationship("Resume", back_populates="interviews")
     questions = relationship("InterviewQuestion", back_populates="interview", cascade="all, delete-orphan", order_by="InterviewQuestion.order_index")
+    weak_topics = relationship("InterviewWeakTopic", back_populates="interview", cascade="all, delete-orphan")
 
 class InterviewQuestion(Base):
     __tablename__ = "interview_questions"

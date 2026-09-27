@@ -12,12 +12,13 @@ from .seed.seed_data import seed_database
 # Import models so SQLAlchemy metadata knows all tables
 from .models import (
     User, Resume, ResumeAnalysis, Job, JobMatch,
-    SavedJob, Interview, InterviewQuestion, InterviewAnswer, Notification
+    SavedJob, Interview, InterviewQuestion, InterviewAnswer, Notification,
+    LearningTopic, LearningVideo, UserLearningProgress, InterviewWeakTopic
 )
 
 # Import route handlers
 from .routes import (
-    auth, users, resumes, jobs, skills, interviews, analytics, assistant, notifications
+    auth, users, resumes, jobs, skills, interviews, analytics, assistant, notifications, learning
 )
 
 # Create tables and seed data on startup
@@ -65,6 +66,7 @@ app.include_router(interviews.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
 app.include_router(assistant.router, prefix=settings.API_V1_STR)
 app.include_router(notifications.router, prefix=settings.API_V1_STR)
+app.include_router(learning.router, prefix=settings.API_V1_STR)
 
 @app.get("/api/health")
 def health_check():

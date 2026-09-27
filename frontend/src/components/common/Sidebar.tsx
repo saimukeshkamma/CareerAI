@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LayoutDashboard, FileText, Briefcase, Bookmark,
-  Target, Mic, History, BarChart3, User, Settings
+  Target, Mic, History, BarChart3, User, Settings, Tv
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -31,9 +31,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onNavigate }) => {
       ]
     },
     {
-      title: 'Interview Practice',
+      title: 'Interview & Learning',
       items: [
         { id: 'interview', label: 'AI Mock Interview', icon: <Mic className="w-4 h-4" />, badge: 'Live AI' },
+        { id: 'learning-hub', label: '📺 Learning Hub', icon: <Tv className="w-4 h-4" />, badge: 'YouTube AI' },
         { id: 'interview-history', label: 'Interview History', icon: <History className="w-4 h-4" /> }
       ]
     },

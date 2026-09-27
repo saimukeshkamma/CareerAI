@@ -7,8 +7,10 @@ from ..models.user import User
 from ..models.resume import Resume
 from ..models.interview import Interview, InterviewQuestion, InterviewAnswer
 from ..models.notification import Notification
+from ..models.learning import InterviewWeakTopic, LearningTopic
 from ..schemas.interview import InterviewCreate, InterviewAnswerSubmit
 from ..ai.interview_coach import AIInterviewCoach
+from ..services.learning_recommendation import LearningRecommendationService
 from ..utils.security import get_current_user
 
 router = APIRouter(prefix="/interviews", tags=["Interviews"])
@@ -121,6 +123,13 @@ def get_interview_detail(
             "answer": ans_data
         })
 
+    weak_topics_data = []
+    strong_topics_data = []
+    if interview.status == "completed":
+        extracted = LearningRecommendationService.extract_weak_topics_from_interview(interview, db)
+        weak_topics_data = extracted.get("weak_topics", [])
+        strong_topics_data = extracted.get("strong_topics", [])
+
     return {
         "id": interview.id,
         "role": interview.role,
@@ -137,7 +146,9 @@ def get_interview_detail(
         "key_strengths": safe_parse_json(interview.key_strengths, []),
         "key_improvements": safe_parse_json(interview.key_improvements, []),
         "created_at": interview.created_at,
-        "questions": formatted_questions
+        "questions": formatted_questions,
+        "weak_topics": weak_topics_data,
+        "strong_topics": strong_topics_data
     }
 
 @router.post("/{interview_id}/questions/{question_id}/answer")

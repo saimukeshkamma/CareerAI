@@ -3,6 +3,7 @@ from .resume import Resume, ResumeAnalysis
 from .job import Job, JobMatch, SavedJob
 from .interview import Interview, InterviewQuestion, InterviewAnswer
 from .notification import Notification
+from .learning import LearningTopic, LearningVideo, UserLearningProgress, InterviewWeakTopic
 
 __all__ = [
     "User",
@@ -14,5 +15,9 @@ __all__ = [
     "Interview",
     "InterviewQuestion",
     "InterviewAnswer",
-    "Notification"
+    "Notification",
+    "LearningTopic",
+    "LearningVideo",
+    "UserLearningProgress",
+    "InterviewWeakTopic"
 ]

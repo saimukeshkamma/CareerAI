@@ -2,7 +2,9 @@ import axios from 'axios';
 import {
   User, Resume, Job, MatchBreakdown,
   SkillGapItem, Interview, InterviewHistoryItem,
-  DashboardData, AnalyticsData, NotificationItem
+  DashboardData, AnalyticsData, NotificationItem,
+  LearningTopicBrief, LearningTopicDetail, LearningCategory,
+  UserLearningProgress, PersonalizedLearningData
 } from '../types';
 
 const API_BASE_URL = '/api';
@@ -216,6 +218,38 @@ export const profileApi = {
   },
   deleteAccount: async () => {
     const res = await apiClient.delete('/users/account');
+    return res.data;
+  }
+};
+
+// Learning Hub endpoints
+export const learningApi = {
+  getCategories: async (): Promise<LearningCategory[]> => {
+    const res = await apiClient.get('/learning/categories');
+    return res.data;
+  },
+  getTopics: async (params?: { category?: string; difficulty?: string; q?: string }): Promise<LearningTopicBrief[]> => {
+    const res = await apiClient.get('/learning/topics', { params });
+    return res.data;
+  },
+  getTopic: async (idOrSlug: string | number): Promise<LearningTopicDetail> => {
+    const res = await apiClient.get(`/learning/topics/${idOrSlug}`);
+    return res.data;
+  },
+  getForYou: async (): Promise<PersonalizedLearningData> => {
+    const res = await apiClient.get('/learning/recommendations/for-you');
+    return res.data;
+  },
+  getInterviewRecommendations: async (interviewId: number) => {
+    const res = await apiClient.get(`/learning/interviews/${interviewId}/recommendations`);
+    return res.data;
+  },
+  updateProgress: async (data: { topic_id: number; video_id?: number; status?: string; progress?: number; is_saved?: boolean; notes?: string }) => {
+    const res = await apiClient.post('/learning/progress', data);
+    return res.data;
+  },
+  getMyLearning: async (): Promise<{ in_progress: UserLearningProgress[]; completed: UserLearningProgress[]; saved: UserLearningProgress[]; total_active_topics: number; total_completed_topics: number; total_saved_topics: number }> => {
+    const res = await apiClient.get('/learning/my-learning');
     return res.data;
   }
 };

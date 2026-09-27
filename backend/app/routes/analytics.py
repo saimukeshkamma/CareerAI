@@ -9,6 +9,7 @@ from ..models.job import Job, SavedJob
 from ..models.interview import Interview
 from ..ai.job_matcher import AIJobMatcher
 from ..ai.skill_analyzer import AISkillAnalyzer
+from ..services.learning_recommendation import LearningRecommendationService
 from ..utils.security import get_current_user
 
 router = APIRouter(tags=["Dashboard & Analytics"])
@@ -121,7 +122,8 @@ def get_dashboard_data(
         "recommended_jobs": recommended_jobs,
         "top_skill_gaps": gaps[:3],
         "recent_interview_score": recent_interview_score or 84,
-        "career_insight": insight
+        "career_insight": insight,
+        "recommended_learning": LearningRecommendationService.get_for_you_recommendations(current_user.id, db)
     }
 
 @router.get("/analytics")

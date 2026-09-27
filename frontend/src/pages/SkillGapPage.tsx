@@ -5,11 +5,15 @@ import { skillApi } from '../services/api';
 import { SkillGapItem } from '../types';
 import {
   Target, CheckCircle2, AlertTriangle, BookOpen,
-  ExternalLink, Sparkles, Clock, Compass, ChevronRight
+  ExternalLink, Sparkles, Clock, Compass, ChevronRight, Tv
 } from 'lucide-react';
 import { LoadingState } from '../components/common/LoadingState';
 
-export const SkillGapPage: React.FC = () => {
+interface SkillGapPageProps {
+  onNavigate?: (tab: string, contextId?: any) => void;
+}
+
+export const SkillGapPage: React.FC<SkillGapPageProps> = ({ onNavigate }) => {
   const { user } = useAuth();
   const { showToast } = useNotifications();
 
@@ -166,6 +170,14 @@ export const SkillGapPage: React.FC = () => {
                       <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-800 text-slate-300">
                         {item.difficulty} Level
                       </span>
+
+                      <button
+                        onClick={() => onNavigate && onNavigate('learning-hub', item.skill)}
+                        className="px-3 py-1 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-md shadow-blue-500/25 flex items-center gap-1.5 transition-all hover:scale-105 ml-1"
+                      >
+                        <Tv className="w-3.5 h-3.5" />
+                        <span>Improve Skill →</span>
+                      </button>
                     </div>
                   </div>
 

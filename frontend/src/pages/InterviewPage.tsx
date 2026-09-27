@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { interviewApi } from '../services/api';
-import { Interview, InterviewQuestion, InterviewAnswer } from '../types';
+import { Interview, InterviewQuestion, InterviewAnswer, LearningVideo } from '../types';
 import {
   Mic, MicOff, Send, Sparkles, CheckCircle2,
   AlertTriangle, ArrowRight, RefreshCw, Trophy,
-  Clock, Play, HelpCircle, Layers, Check, Compass
+  Clock, Play, HelpCircle, Layers, Check, Compass,
+  Tv, ExternalLink, X, BookOpen, RotateCcw
 } from 'lucide-react';
 import { ScoreRing } from '../components/common/ScoreRing';
 import { LoadingState } from '../components/common/LoadingState';
@@ -40,6 +41,9 @@ export const InterviewPage: React.FC<InterviewPageProps> = ({ onNavigate, initia
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<any>(null);
+
+  // Active playing video modal
+  const [activePlayingVideo, setActivePlayingVideo] = useState<LearningVideo | null>(null);
 
   useEffect(() => {
     if (initialInterviewId) {
@@ -401,6 +405,154 @@ export const InterviewPage: React.FC<InterviewPageProps> = ({ onNavigate, initia
           </div>
         </div>
 
+        {/* 🎯 AI-Personalized YouTube Learning Recommendations */}
+        {interview.weak_topics && interview.weak_topics.length > 0 && (
+          <div className="glass-card p-6 sm:p-8 rounded-3xl border border-rose-500/30 bg-gradient-to-br from-rose-950/20 via-slate-900 to-indigo-950/20 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1.5">
+                    <Tv className="w-3.5 h-3.5" />
+                    AI-Personalized Learning Track
+                  </span>
+                  <span className="text-xs text-slate-400">Directly connected to your answers</span>
+                </div>
+                <h3 className="text-xl font-black text-white tracking-tight">
+                  📚 Recommended Learning For You
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Based on your interview performance, here are the topics you should improve with top YouTube masterclasses:
+                </p>
+              </div>
+
+              <button
+                onClick={() => onNavigate && onNavigate('learning-hub')}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Open Learning Hub</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* List of Weak Topics */}
+            <div className="space-y-6">
+              {interview.weak_topics.map((item, idx) => (
+                <div key={idx} className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          🔴 {item.performance_level}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-400">Score: {item.score}/100</span>
+                      </div>
+                      <h4 className="text-base font-bold text-white">{item.topic_name}</h4>
+                      <p className="text-xs text-rose-300/90 mt-1 max-w-xl">
+                        <span className="font-semibold text-rose-400">Why: </span>{item.reason}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => onNavigate && onNavigate('learning-hub', item.topic_slug || item.topic_name)}
+                      className="text-xs font-bold text-blue-400 hover:text-white flex items-center gap-1 shrink-0 px-3 py-1.5 rounded-lg bg-blue-600/10 hover:bg-blue-600 transition-colors"
+                    >
+                      <span>Explore More Videos</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Multiple YouTube Creators Side-by-Side */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+                      Choose Your Preferred Creator:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      {item.recommended_videos?.slice(0, 3).map((video, vIdx) => (
+                        <div
+                          key={vIdx}
+                          className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between group"
+                        >
+                          <div>
+                            <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-900 mb-2 border border-slate-800">
+                              <img
+                                src={video.thumbnail_url}
+                                alt={video.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              {video.duration && (
+                                <span className="absolute bottom-1.5 right-1.5 px-1 py-0.2 rounded bg-black/80 text-[9px] font-bold text-white">
+                                  {video.duration}
+                                </span>
+                              )}
+                              <button
+                                onClick={() => setActivePlayingVideo(video)}
+                                className="absolute inset-0 m-auto w-8 h-8 rounded-full bg-rose-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
+                              </button>
+                            </div>
+
+                            <span className="text-[11px] font-bold text-indigo-400 block truncate">
+                              🎥 {video.channel_name}
+                            </span>
+                            <h5 className="text-xs font-semibold text-white line-clamp-2 mt-0.5">
+                              {video.title}
+                            </h5>
+                          </div>
+
+                          <div className="mt-3 pt-2 border-t border-slate-800 flex items-center justify-between gap-1.5">
+                            <button
+                              onClick={() => setActivePlayingVideo(video)}
+                              className="flex-1 py-1 rounded-md text-[10px] font-bold bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white transition-colors flex items-center justify-center gap-1"
+                            >
+                              <Play className="w-3 h-3 fill-current" />
+                              Watch
+                            </button>
+                            <a
+                              href={video.youtube_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800"
+                              title="Open on YouTube"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-800">
+              <button
+                onClick={() => onNavigate && onNavigate('learning-hub')}
+                className="px-5 py-3 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-500/20 flex items-center justify-center gap-2"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Start Learning in Learning Hub →</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setInterview(null);
+                  setCurrentQuestionIndex(0);
+                  setUserAnswer('');
+                  setLastEvaluation(null);
+                }}
+                className="px-5 py-3 rounded-xl text-xs font-bold text-slate-200 glass-card hover:bg-slate-800 hover:text-white flex items-center justify-center gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Practice Interview Again</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Detailed Question by Question Review */}
         <div className="space-y-4">
           <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
@@ -429,6 +581,56 @@ export const InterviewPage: React.FC<InterviewPageProps> = ({ onNavigate, initia
             </div>
           ))}
         </div>
+
+        {/* Video Player Modal */}
+        {activePlayingVideo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-fade-in">
+            <div className="glass-card w-full max-w-4xl rounded-3xl border border-slate-700 p-6 shadow-2xl space-y-4 text-left">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <div>
+                  <span className="text-xs font-bold text-indigo-400">🎥 {activePlayingVideo.channel_name}</span>
+                  <h3 className="text-sm sm:text-base font-bold text-white line-clamp-1 mt-0.5">
+                    {activePlayingVideo.title}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setActivePlayingVideo(null)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-2xl">
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${activePlayingVideo.video_id}?autoplay=1&rel=0`}
+                  title={activePlayingVideo.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full border-0"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <a
+                  href={activePlayingVideo.youtube_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 glass-card hover:bg-slate-800 flex items-center gap-1.5"
+                >
+                  <span>Open on YouTube</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <button
+                  onClick={() => setActivePlayingVideo(null)}
+                  className="px-4 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white"
+                >
+                  Done Watching
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

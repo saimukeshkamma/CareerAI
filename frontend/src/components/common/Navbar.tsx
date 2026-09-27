@@ -5,7 +5,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import {
   Brain, Bell, Sun, Moon, LogOut, User,
   FileText, Briefcase, Target, Mic, BarChart3,
-  Menu, X, Sparkles, CheckCheck
+  Menu, X, Sparkles, CheckCheck, Tv
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -28,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab = 'dashboard', onNavi
     { id: 'jobs', label: 'Job Matcher', icon: <Briefcase className="w-4 h-4" /> },
     { id: 'skills', label: 'Skill Gap', icon: <Target className="w-4 h-4" /> },
     { id: 'interview', label: 'AI Interview', icon: <Mic className="w-4 h-4" /> },
+    { id: 'learning-hub', label: 'Learning Hub', icon: <Tv className="w-4 h-4 text-rose-400" /> },
     { id: 'analytics', label: 'Analytics', icon: <Sparkles className="w-4 h-4" /> },
   ];
 

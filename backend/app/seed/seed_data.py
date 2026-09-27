@@ -5,6 +5,7 @@ from ..models.job import Job
 from ..models.resume import Resume, ResumeAnalysis
 from ..models.interview import Interview, InterviewQuestion, InterviewAnswer
 from ..models.notification import Notification
+from ..models.learning import LearningTopic, LearningVideo, UserLearningProgress, InterviewWeakTopic
 from ..utils.security import get_password_hash
 
 DEMO_JOBS = [
@@ -358,7 +359,7 @@ def seed_database(db: Session):
     # Check if jobs exist
     job_count = db.query(Job).count()
     if job_count == 0:
-        print("🌱 Seeding jobs database...")
+        print("[SEED] Seeding jobs database...")
         for j in DEMO_JOBS:
             job = Job(
                 title=j["title"],
@@ -377,12 +378,12 @@ def seed_database(db: Session):
             )
             db.add(job)
         db.commit()
-        print(f"✅ Successfully seeded {len(DEMO_JOBS)} tech jobs.")
+        print(f"[OK] Successfully seeded {len(DEMO_JOBS)} tech jobs.")
 
     # Check if demo users exist
     user_count = db.query(User).count()
     if user_count == 0:
-        print("🌱 Seeding demo users...")
+        print("[SEED] Seeding demo users...")
         hashed_pw = get_password_hash("password123")
 
         # Demo User 1: Alex Rivera (Primary demo account)
@@ -567,4 +568,243 @@ def seed_database(db: Session):
         db.add(user3)
 
         db.commit()
-        print("✅ Demo users, active resume, analysis, and interview seeded successfully.")
+        print("[OK] Demo users, active resume, analysis, and interview seeded successfully.")
+
+    seed_learning_topics_and_videos(db)
+
+def seed_learning_topics_and_videos(db: Session):
+    from ..services.youtube_service import YouTubeService
+
+    # Check if topics already seeded
+    if db.query(LearningTopic).count() > 0:
+        return
+
+    TOPIC_DEFINITIONS = [
+        {
+            "name": "Backpropagation & Gradient Descent",
+            "slug": "backpropagation",
+            "category": "Deep Learning",
+            "description": "The mathematical foundation of deep learning. Understand how error gradients flow backwards through computational graphs to update neural network weights via the chain rule.",
+            "why_learn": "Mandatory for deep learning and AI engineer interviews. Essential for debugging exploding/vanishing gradients and tuning loss convergence.",
+            "difficulty": "Intermediate",
+            "icon": "Layers",
+            "subtopics": json.dumps(["Chain Rule Calculus", "Gradient Computation", "Weight & Bias Updates", "Vanishing Gradients", "Autograd Engines"])
+        },
+        {
+            "name": "Overfitting, Underfitting & Bias-Variance",
+            "slug": "overfitting-underfitting",
+            "category": "Machine Learning",
+            "description": "Learn why models fail to generalize. Master the bias-variance tradeoff, identify high variance vs high bias on loss curves, and implement regularization.",
+            "why_learn": "One of the most frequently asked machine learning interview questions. Directly impacts model deployment reliability and generalization.",
+            "difficulty": "Beginner",
+            "icon": "Cpu",
+            "subtopics": json.dumps(["Bias vs Variance Tradeoff", "L1 / L2 Regularization (Lasso/Ridge)", "Dropout Layers", "Cross-Validation", "Data Augmentation", "Early Stopping"])
+        },
+        {
+            "name": "SQL Joins (Inner, Left, Right, Full Outer)",
+            "slug": "sql-joins",
+            "category": "Data",
+            "description": "Comprehensive visual and practical breakdown of relational data queries. Master combining records across tables, handling NULL values, and multi-key joins.",
+            "why_learn": "Foundational requirement for every software engineering, data science, and AI position. Tested in live SQL coding screenings.",
+            "difficulty": "Beginner",
+            "icon": "Database",
+            "subtopics": json.dumps(["INNER JOIN", "LEFT (OUTER) JOIN", "RIGHT (OUTER) JOIN", "FULL OUTER JOIN", "CROSS JOIN", "Self-Joins", "NULL Handling"])
+        },
+        {
+            "name": "Transformers & Self-Attention Mechanism",
+            "slug": "transformers-attention",
+            "category": "Deep Learning",
+            "description": "The dominant architecture powering modern LLMs (GPT-4, Claude, Gemini). Understand scaled dot-product attention, Queries, Keys, Values, and positional embeddings.",
+            "why_learn": "The central architecture of modern Generative AI. Essential for AI Engineer, LLM Engineer, and Research Scientist roles.",
+            "difficulty": "Intermediate",
+            "icon": "Sparkles",
+            "subtopics": json.dumps(["Query-Key-Value Vectors", "Scaled Dot-Product", "Multi-Head Attention", "Positional Encodings", "Encoder vs Decoder", "Masked Attention"])
+        },
+        {
+            "name": "Docker Containerization & Multi-Stage Builds",
+            "slug": "docker-containerization",
+            "category": "Cloud & DevOps",
+            "description": "Package applications and machine learning inference services into reproducible, lightweight container images. Master Dockerfiles, volumes, and docker-compose.",
+            "why_learn": "Standard industry deployment practice. Bridging local development and production cloud clusters.",
+            "difficulty": "Beginner",
+            "icon": "Cloud",
+            "subtopics": json.dumps(["Containers vs Virtual Machines", "Dockerfile Directives", "Multi-stage Builds", "Docker Compose", "Volume Mounting", "Port Mapping"])
+        },
+        {
+            "name": "Python Fundamentals & Data Structures",
+            "slug": "python-fundamentals",
+            "category": "Programming",
+            "description": "Master clean Python 3 idioms, list comprehensions, generators, dictionaries, memory management, and object-oriented design patterns.",
+            "why_learn": "The #1 programming language in AI, ML, Data Science, and backend scripting worldwide.",
+            "difficulty": "Beginner",
+            "icon": "Code",
+            "subtopics": json.dumps(["Data Types & Collections", "Object-Oriented Programming (OOP)", "Generators & Iterators", "Decorators & Context Managers", "Error Handling"])
+        },
+        {
+            "name": "System Design & Scalable Architecture",
+            "slug": "system-design",
+            "category": "Interview Preparation",
+            "description": "Architect distributed systems handling millions of users. Master load balancing, caching (Redis), database sharding, CAP theorem, and microservices.",
+            "why_learn": "The critical differentiator for mid and senior engineering interviews determining level and compensation.",
+            "difficulty": "Intermediate",
+            "icon": "Briefcase",
+            "subtopics": json.dumps(["Horizontal vs Vertical Scaling", "Load Balancers & Reverse Proxies", "Caching Strategies (Redis/Memcached)", "Database Sharding & Replication", "CAP Theorem", "Message Queues (Kafka)"])
+        },
+        {
+            "name": "Neural Networks & Forward Propagation",
+            "slug": "neural-networks",
+            "category": "Deep Learning",
+            "description": "Understand artificial neurons, dot products, nonlinear activation functions (ReLU, Sigmoid, GELU), and multi-layer perceptron architectures.",
+            "why_learn": "The foundational building block for all deep learning models from computer vision to language models.",
+            "difficulty": "Beginner",
+            "icon": "Layers",
+            "subtopics": json.dumps(["Perceptron & Artificial Neurons", "Activation Functions (ReLU, Sigmoid)", "Matrix Multiplications", "Loss Functions", "Dense Layers"])
+        },
+        {
+            "name": "Database Indexing, B-Trees & Query Optimization",
+            "slug": "database-indexing",
+            "category": "Data",
+            "description": "Learn how database engines search data efficiently. Master B+ Trees, clustered vs non-clustered indexes, execution plans (EXPLAIN), and write latency trade-offs.",
+            "why_learn": "Core backend interview topic. Distinguishes junior developers from production-ready engineers.",
+            "difficulty": "Intermediate",
+            "icon": "Database",
+            "subtopics": json.dumps(["B-Tree & B+ Tree Structure", "Clustered vs Non-Clustered", "Composite Indexing", "EXPLAIN Query Analysis", "Index Overhead on INSERT/UPDATE"])
+        },
+        {
+            "name": "HR & Behavioral Interviews (STAR Method)",
+            "slug": "behavioral-interview",
+            "category": "Interview Preparation",
+            "description": "Master behavioral and culture-fit interviews. Formulate compelling STAR responses (Situation, Task, Action, Result) for conflict, leadership, and failures.",
+            "why_learn": "Over 50% of hiring decisions come down to communication, cultural alignment, and emotional intelligence.",
+            "difficulty": "Beginner",
+            "icon": "Briefcase",
+            "subtopics": json.dumps(["The STAR Framework", "Handling Technical Disagreements", "Explaining Past Project Failures", "60-Second Elevator Pitch", "Asking Smart Questions"])
+        },
+        {
+            "name": "Generative AI, Prompt Engineering & RAG",
+            "slug": "generative-ai-llms",
+            "category": "Artificial Intelligence",
+            "description": "End-to-end architectures for Retrieval-Augmented Generation (RAG). Learn vector embeddings, similarity search, chunking strategies, and hallucination reduction.",
+            "why_learn": "The highest demand software and AI engineering skill in the modern job market.",
+            "difficulty": "Intermediate",
+            "icon": "Sparkles",
+            "subtopics": json.dumps(["Vector Embeddings", "Vector Databases (Milvus, Chroma, Pinecone)", "Chunking Strategies", "Prompt Optimization", "Hallucination Mitigation", "Evaluation Metrics"])
+        },
+        {
+            "name": "Linear & Logistic Regression",
+            "slug": "linear-logistic-regression",
+            "category": "Machine Learning",
+            "description": "The bedrock of statistical machine learning. Master cost functions (MSE, Binary Cross-Entropy), gradient descent optimization, and odds ratios.",
+            "why_learn": "Essential for understanding statistical significance, feature interpretability, and baseline modeling.",
+            "difficulty": "Beginner",
+            "icon": "Cpu",
+            "subtopics": json.dumps(["Cost Function Formulation", "Ordinary Least Squares", "Sigmoid & Odds Ratio", "Gradient Descent", "Evaluation Metrics (R2, Log-Loss)"])
+        },
+        {
+            "name": "Decision Trees & Ensemble Random Forest",
+            "slug": "decision-trees-random-forest",
+            "category": "Machine Learning",
+            "description": "Understand recursive binary splitting, Gini impurity, entropy, information gain, and bagging ensemble techniques to reduce variance.",
+            "why_learn": "Tabular data powerhouse models frequently asked in ML engineer and Data Scientist interviews.",
+            "difficulty": "Intermediate",
+            "icon": "Cpu",
+            "subtopics": json.dumps(["Gini Impurity & Information Gain", "Pruning Techniques", "Bagging & Bootstrap Aggregating", "Random Forest Feature Subsampling", "Feature Importance"])
+        },
+        {
+            "name": "Convolutional Neural Networks (CNN)",
+            "slug": "convolutional-neural-networks",
+            "category": "Deep Learning",
+            "description": "Spatial feature extraction for vision and signals. Master kernels, stride, padding, pooling, and foundational architectures (ResNet, VGG).",
+            "why_learn": "Essential for computer vision, image processing, autonomous vehicles, and medical imaging careers.",
+            "difficulty": "Intermediate",
+            "icon": "Layers",
+            "subtopics": json.dumps(["2D Convolutions & Kernels", "Padding & Stride Math", "Max & Average Pooling", "Residual Connections (Skip Connections)", "Receptive Fields"])
+        },
+        {
+            "name": "Modern JavaScript & Asynchronous Programming",
+            "slug": "javascript-async-modern",
+            "category": "Programming",
+            "description": "Deep dive into the JavaScript runtime, Event Loop, Microtask Queue, Promises, async/await, and modern ES6+ paradigms.",
+            "why_learn": "Core language for full-stack, frontend, and Node.js backend engineering.",
+            "difficulty": "Beginner",
+            "icon": "Code",
+            "subtopics": json.dumps(["Event Loop & Call Stack", "Promises & async/await", "Closures & Scope", "Prototypes & Classes", "Array Methods (map, filter, reduce)"])
+        }
+    ]
+
+    # Insert topics and their curated multi-creator videos
+    for item in TOPIC_DEFINITIONS:
+        topic = LearningTopic(
+            name=item["name"],
+            slug=item["slug"],
+            category=item["category"],
+            description=item["description"],
+            why_learn=item["why_learn"],
+            difficulty=item["difficulty"],
+            icon=item["icon"],
+            subtopics=item["subtopics"]
+        )
+        db.add(topic)
+        db.flush()
+
+        # Fetch curated multi-creator videos
+        videos_meta = YouTubeService.get_videos_for_topic(item["slug"], item["name"], limit=4)
+        for v in videos_meta:
+            db_video = LearningVideo(
+                topic_id=topic.id,
+                video_id=v["video_id"],
+                title=v["title"],
+                channel_name=v["channel_name"],
+                thumbnail_url=v["thumbnail_url"],
+                description=v.get("description", ""),
+                duration=v.get("duration", "15:00"),
+                difficulty=v.get("difficulty", "Intermediate"),
+                youtube_url=v["youtube_url"],
+                view_count=v.get("view_count", "Verified"),
+                teaching_style=v.get("teaching_style", "Video Walkthrough")
+            )
+            db.add(db_video)
+
+    # Seed initial user progress for Demo User 1
+    user1 = db.query(User).filter(User.id == 1).first()
+    if user1:
+        # User 1 active learning progress
+        backprop_topic = db.query(LearningTopic).filter(LearningTopic.slug == "backpropagation").first()
+        sql_topic = db.query(LearningTopic).filter(LearningTopic.slug == "sql-joins").first()
+        docker_topic = db.query(LearningTopic).filter(LearningTopic.slug == "docker-containerization").first()
+        python_topic = db.query(LearningTopic).filter(LearningTopic.slug == "python-fundamentals").first()
+        trans_topic = db.query(LearningTopic).filter(LearningTopic.slug == "transformers-attention").first()
+
+        if backprop_topic:
+            db.add(UserLearningProgress(user_id=user1.id, topic_id=backprop_topic.id, status="IN_PROGRESS", progress=80, is_saved=True))
+        if sql_topic:
+            db.add(UserLearningProgress(user_id=user1.id, topic_id=sql_topic.id, status="IN_PROGRESS", progress=50, is_saved=True))
+        if docker_topic:
+            db.add(UserLearningProgress(user_id=user1.id, topic_id=docker_topic.id, status="IN_PROGRESS", progress=20, is_saved=True))
+        if python_topic:
+            db.add(UserLearningProgress(user_id=user1.id, topic_id=python_topic.id, status="COMPLETED", progress=100, is_saved=False))
+        if trans_topic:
+            db.add(UserLearningProgress(user_id=user1.id, topic_id=trans_topic.id, status="NOT_STARTED", progress=0, is_saved=True))
+
+        # Seed Interview Weak Topics for Demo Interview 1 if exists
+        demo_interview = db.query(Interview).filter(Interview.user_id == user1.id).order_by(Interview.id.asc()).first()
+        if demo_interview and backprop_topic and sql_topic:
+            db.add(InterviewWeakTopic(
+                interview_id=demo_interview.id,
+                topic_id=backprop_topic.id,
+                topic_name=backprop_topic.name,
+                score=45,
+                performance_level="Needs Improvement",
+                reason="Your explanation missed the role of gradients and weight updates via the chain rule."
+            ))
+            db.add(InterviewWeakTopic(
+                interview_id=demo_interview.id,
+                topic_id=sql_topic.id,
+                topic_name=sql_topic.name,
+                score=52,
+                performance_level="Needs Improvement",
+                reason="Difficulty explaining INNER JOIN vs LEFT JOIN with concrete examples."
+            ))
+
+    db.commit()
+    print("[OK] Learning topics, multi-creator YouTube videos, and progress seeded successfully.")
