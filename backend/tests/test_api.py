@@ -216,3 +216,43 @@ def test_learning_progress_tracking(client):
     assert "in_progress" in my_data
     assert "saved" in my_data
     assert any(item["topic_id"] == 1 for item in my_data["in_progress"])
+
+def test_candidate_profile_upgrade_and_stats(client):
+    auth_resp = client.post("/api/auth/demo-login/1")
+    token = auth_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Fetch current profile
+    me_resp = client.get("/api/users/me", headers=headers)
+    assert me_resp.status_code == 200
+    user_data = me_resp.json()
+    assert user_data["email"] == "alex@careerai.dev"
+
+    # Update candidate profile with new fields
+    update_payload = {
+        "headline": "Lead AI Systems Engineer & Researcher",
+        "github_url": "https://github.com/alexrivera-ai",
+        "linkedin_url": "https://linkedin.com/in/alex-rivera-cs",
+        "portfolio_url": "https://alexrivera.dev",
+        "skills": "Python, PyTorch, Docker, Kubernetes, LangChain, React, FastAPI",
+        "preferred_work_type": "Remote",
+        "preferred_job_type": "Full-time",
+        "salary_expectation": "$150k - $180k",
+        "availability": "Immediate"
+    }
+    update_resp = client.put("/api/users/profile", json=update_payload, headers=headers)
+    assert update_resp.status_code == 200
+    updated_user = update_resp.json()
+    assert updated_user["headline"] == "Lead AI Systems Engineer & Researcher"
+    assert updated_user["github_url"] == "https://github.com/alexrivera-ai"
+    assert updated_user["skills"] == update_payload["skills"]
+
+    # Verify profile stats and completion score
+    stats_resp = client.get("/api/users/stats", headers=headers)
+    assert stats_resp.status_code == 200
+    stats = stats_resp.json()
+    assert "profile_strength" in stats
+    assert stats["profile_strength"] >= 70
+    assert "strength_label" in stats
+    assert len(stats["completion_items"]) >= 8
+    assert "learning_summary" in stats

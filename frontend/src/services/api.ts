@@ -4,7 +4,7 @@ import {
   SkillGapItem, Interview, InterviewHistoryItem,
   DashboardData, AnalyticsData, NotificationItem,
   LearningTopicBrief, LearningTopicDetail, LearningCategory,
-  UserLearningProgress, PersonalizedLearningData
+  UserLearningProgress, PersonalizedLearningData, ProfileStats
 } from '../types';
 
 const API_BASE_URL = '/api';
@@ -214,6 +214,14 @@ export const notificationApi = {
 export const profileApi = {
   update: async (data: Partial<User>): Promise<User> => {
     const res = await apiClient.put('/users/profile', data);
+    return res.data;
+  },
+  getStats: async (): Promise<ProfileStats> => {
+    const res = await apiClient.get('/users/stats');
+    return res.data;
+  },
+  updateAvatar: async (profilePhoto: string): Promise<User> => {
+    const res = await apiClient.post('/users/avatar', { profile_photo: profilePhoto });
     return res.data;
   },
   deleteAccount: async () => {

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, ConfigDict
 
@@ -15,6 +15,16 @@ class UserBase(BaseModel):
     target_role: Optional[str] = "AI Engineer"
     bio: Optional[str] = None
     profile_photo: Optional[str] = None
+    headline: Optional[str] = None
+    github_url: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    skills: Optional[str] = None
+    preferred_work_type: Optional[str] = "Remote"
+    preferred_job_type: Optional[str] = "Full-time"
+    salary_expectation: Optional[str] = None
+    availability: Optional[str] = "Immediate"
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -28,6 +38,16 @@ class UserUpdate(BaseModel):
     target_role: Optional[str] = None
     bio: Optional[str] = None
     profile_photo: Optional[str] = None
+    headline: Optional[str] = None
+    github_url: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    skills: Optional[str] = None
+    preferred_work_type: Optional[str] = None
+    preferred_job_type: Optional[str] = None
+    salary_expectation: Optional[str] = None
+    availability: Optional[str] = None
 
 class UserResponse(UserBase):
     id: int
@@ -35,3 +55,13 @@ class UserResponse(UserBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class ProfileStatsResponse(BaseModel):
+    profile_strength: int
+    strength_label: str
+    completion_items: List[Dict[str, Any]]
+    active_resume: Optional[Dict[str, Any]] = None
+    interview_summary: Optional[Dict[str, Any]] = None
+    learning_summary: Optional[Dict[str, Any]] = None
+    job_matches_count: int = 0
+

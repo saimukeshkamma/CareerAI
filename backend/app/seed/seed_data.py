@@ -355,7 +355,35 @@ June 2024 – August 2024 | San Jose, CA
 • Participated in daily Agile standups, sprint retrospectives, and authored unit tests achieving 94% test coverage.
 """
 
+def ensure_schema_migrations(db: Session):
+    try:
+        bind = db.get_bind()
+        with bind.connect() as conn:
+            result = conn.exec_driver_sql("PRAGMA table_info(users)")
+            existing_cols = {row[1] for row in result.fetchall()}
+            
+            new_columns = [
+                ("headline", "VARCHAR(200)"),
+                ("github_url", "VARCHAR(255)"),
+                ("linkedin_url", "VARCHAR(255)"),
+                ("portfolio_url", "VARCHAR(255)"),
+                ("twitter_url", "VARCHAR(255)"),
+                ("skills", "TEXT"),
+                ("preferred_work_type", "VARCHAR(50) DEFAULT 'Remote'"),
+                ("preferred_job_type", "VARCHAR(50) DEFAULT 'Full-time'"),
+                ("salary_expectation", "VARCHAR(100)"),
+                ("availability", "VARCHAR(50) DEFAULT 'Immediate'"),
+            ]
+            
+            for col_name, col_type in new_columns:
+                if col_name not in existing_cols:
+                    conn.exec_driver_sql(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
+            conn.commit()
+    except Exception:
+        pass
+
 def seed_database(db: Session):
+    ensure_schema_migrations(db)
     # Check if jobs exist
     job_count = db.query(Job).count()
     if job_count == 0:
@@ -400,7 +428,17 @@ def seed_database(db: Session):
             experience_level="Student / Intern",
             target_role="AI Engineer",
             bio="CS Junior at Stanford passionate about generative AI, deep learning systems, and deploying models to production.",
-            profile_photo="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80"
+            profile_photo="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+            headline="Aspiring AI Engineer & Stanford CS Junior | Generative AI, PyTorch & LLM Systems",
+            github_url="https://github.com/alexrivera-ai",
+            linkedin_url="https://linkedin.com/in/alex-rivera-cs",
+            portfolio_url="https://alexrivera.dev",
+            twitter_url="https://x.com/alexrivera_ai",
+            skills="Python, PyTorch, LangChain, FastAPI, Docker, SQL, React, TypeScript, Machine Learning, Transformers, Vector DBs, HuggingFace",
+            preferred_work_type="Remote",
+            preferred_job_type="Full-time",
+            salary_expectation="$130,000 - $160,000 / yr",
+            availability="June 2026 (or Immediate for Internships)"
         )
         db.add(user1)
         db.flush()
@@ -569,6 +607,21 @@ def seed_database(db: Session):
 
         db.commit()
         print("[OK] Demo users, active resume, analysis, and interview seeded successfully.")
+
+    # Ensure existing demo user 1 has upgraded profile data
+    alex = db.query(User).filter(User.email == "alex@careerai.dev").first()
+    if alex and not alex.headline:
+        alex.headline = "Aspiring AI Engineer & Stanford CS Junior | Generative AI, PyTorch & LLM Systems"
+        alex.github_url = "https://github.com/alexrivera-ai"
+        alex.linkedin_url = "https://linkedin.com/in/alex-rivera-cs"
+        alex.portfolio_url = "https://alexrivera.dev"
+        alex.twitter_url = "https://x.com/alexrivera_ai"
+        alex.skills = "Python, PyTorch, LangChain, FastAPI, Docker, SQL, React, TypeScript, Machine Learning, Transformers, Vector DBs, HuggingFace"
+        alex.preferred_work_type = "Remote"
+        alex.preferred_job_type = "Full-time"
+        alex.salary_expectation = "$130,000 - $160,000 / yr"
+        alex.availability = "June 2026 (or Immediate for Internships)"
+        db.commit()
 
     seed_learning_topics_and_videos(db)
 

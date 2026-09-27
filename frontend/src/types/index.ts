@@ -12,8 +12,50 @@ export interface User {
   target_role?: string;
   bio?: string;
   profile_photo?: string;
+  headline?: string;
+  github_url?: string;
+  linkedin_url?: string;
+  portfolio_url?: string;
+  twitter_url?: string;
+  skills?: string;
+  preferred_work_type?: string;
+  preferred_job_type?: string;
+  salary_expectation?: string;
+  availability?: string;
   is_active: boolean;
   created_at: string;
+}
+
+export interface ProfileCompletionItem {
+  id: string;
+  title: string;
+  completed: boolean;
+  points: number;
+  tip: string;
+}
+
+export interface ProfileStats {
+  profile_strength: number;
+  strength_label: string;
+  completion_items: ProfileCompletionItem[];
+  active_resume?: {
+    id: number;
+    title: string;
+    overall_score?: number;
+    ats_score?: number;
+  };
+  interview_summary?: {
+    total_completed: number;
+    avg_score: number;
+    latest_role: string;
+    latest_score?: number;
+  };
+  learning_summary?: {
+    completed_count: number;
+    in_progress_count: number;
+    saved_count: number;
+  };
+  job_matches_count: number;
 }
 
 export interface BulletRewrite {

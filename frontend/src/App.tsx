@@ -76,7 +76,7 @@ const AppContent: React.FC = () => {
             {currentTab === 'interview' && <InterviewPage onNavigate={handleNavigate} initialInterviewId={selectedContextId} />}
             {currentTab === 'interview-history' && <InterviewHistoryPage onNavigate={handleNavigate} />}
             {currentTab === 'analytics' && <AnalyticsPage />}
-            {currentTab === 'profile' && <ProfilePage />}
+            {currentTab === 'profile' && <ProfilePage onNavigate={handleNavigate} />}
             {currentTab === 'settings' && <SettingsPage onNavigate={handleNavigate} />}
           </main>
         </div>

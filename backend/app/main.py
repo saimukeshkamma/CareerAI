@@ -21,11 +21,39 @@ from .routes import (
     auth, users, resumes, jobs, skills, interviews, analytics, assistant, notifications, learning
 )
 
+def ensure_schema_migrations():
+    """Ensure SQLite schema has newly added columns without requiring manual migrations."""
+    with engine.connect() as conn:
+        try:
+            result = conn.exec_driver_sql("PRAGMA table_info(users)")
+            existing_cols = {row[1] for row in result.fetchall()}
+            
+            new_columns = [
+                ("headline", "VARCHAR(200)"),
+                ("github_url", "VARCHAR(255)"),
+                ("linkedin_url", "VARCHAR(255)"),
+                ("portfolio_url", "VARCHAR(255)"),
+                ("twitter_url", "VARCHAR(255)"),
+                ("skills", "TEXT"),
+                ("preferred_work_type", "VARCHAR(50) DEFAULT 'Remote'"),
+                ("preferred_job_type", "VARCHAR(50) DEFAULT 'Full-time'"),
+                ("salary_expectation", "VARCHAR(100)"),
+                ("availability", "VARCHAR(50) DEFAULT 'Immediate'"),
+            ]
+            
+            for col_name, col_type in new_columns:
+                if col_name not in existing_cols:
+                    conn.exec_driver_sql(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
+            conn.commit()
+        except Exception:
+            pass
+
 # Create tables and seed data on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure tables exist
     Base.metadata.create_all(bind=engine)
+    ensure_schema_migrations()
     
     # Auto-seed initial jobs and demo users
     db = SessionLocal()
