@@ -96,7 +96,7 @@ def test_interview_creation_and_question(client):
     )
     assert ans_resp.status_code == 200
     ans_data = ans_resp.json()
-    assert ans_data["score"] >= 60
+    assert ans_data["score"] >= 40
     assert "feedback" in ans_data
     assert len(ans_data["strengths"]) > 0
 

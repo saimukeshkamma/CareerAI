@@ -47,6 +47,7 @@ export const LearningHubPage: React.FC<LearningHubPageProps> = ({ onNavigate, in
 
   // Active detailed topic modal / drawer
   const [selectedTopicDetail, setSelectedTopicDetail] = useState<LearningTopicDetail | null>(null);
+  const [modalCreatorFilter, setModalCreatorFilter] = useState<string>('All');
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Embedded video player modal
@@ -119,6 +120,7 @@ export const LearningHubPage: React.FC<LearningHubPageProps> = ({ onNavigate, in
   const openTopicModal = async (idOrSlug: string | number) => {
     try {
       setLoadingDetail(true);
+      setModalCreatorFilter('All');
       const detail = await learningApi.getTopic(idOrSlug);
       setSelectedTopicDetail(detail);
     } catch (err) {
@@ -199,41 +201,41 @@ export const LearningHubPage: React.FC<LearningHubPageProps> = ({ onNavigate, in
   return (
     <div className="space-y-8 animate-fade-in text-left pb-16">
       
-      {/* 1. Header Banner */}
-      <div className="relative overflow-hidden p-6 sm:p-8 rounded-3xl glass-card border border-blue-500/25 bg-gradient-to-r from-blue-950/40 via-purple-950/20 to-slate-900 shadow-2xl">
-        <div className="absolute -right-12 -top-12 w-56 h-56 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* 1. Header Banner (JobMatch AI Design) */}
+      <div className="relative overflow-hidden p-6 sm:p-8 rounded-3xl card-gradient-hero shadow-2xl text-white">
+        <div className="absolute -right-12 -top-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-sm border border-white/30 flex items-center gap-1.5">
                 <Tv className="w-3 h-3" />
                 Multi-Creator YouTube Library
               </span>
-              <span className="text-xs text-slate-400 font-semibold">• AI Weakness Aligned</span>
+              <span className="text-xs text-indigo-100 font-semibold">• 10-15 Videos Per Topic</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-heading">
               AI-Personalized Learning Hub
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Target your exact interview weak spots with vetted YouTube masterclasses from top creators like 
-              <span className="text-blue-300 font-semibold"> 3Blue1Brown, StatQuest, FreeCodeCamp, Andrej Karpathy</span>, and more. Choose the teaching style you learn best with.
+            <p className="text-xs sm:text-sm text-indigo-100/90 mt-1 max-w-2xl leading-relaxed">
+              Master your technical gaps with vetted YouTube masterclasses from top creators like 
+              <span className="text-white font-bold"> 3Blue1Brown, StatQuest, FreeCodeCamp, Andrej Karpathy, Fireship</span>, and more. Choose the teaching style you learn best with.
             </p>
           </div>
 
           {/* Quick Metrics */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="px-4 py-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
-              <span className="text-base font-black text-white">{topics.length}</span>
-              <p className="text-[10px] uppercase font-semibold text-slate-400 mt-0.5">Core Topics</p>
+            <div className="px-4 py-2.5 rounded-2xl bg-black/20 backdrop-blur-md border border-white/20 text-center">
+              <span className="text-lg font-black text-white">{topics.length}</span>
+              <p className="text-[10px] uppercase font-bold text-indigo-100 mt-0.5">Core Topics</p>
             </div>
-            <div className="px-4 py-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
-              <span className="text-base font-black text-purple-400">{myLearning?.in_progress.length || 0}</span>
-              <p className="text-[10px] uppercase font-semibold text-slate-400 mt-0.5">In Progress</p>
+            <div className="px-4 py-2.5 rounded-2xl bg-black/20 backdrop-blur-md border border-white/20 text-center">
+              <span className="text-lg font-black text-amber-300">{myLearning?.in_progress.length || 0}</span>
+              <p className="text-[10px] uppercase font-bold text-indigo-100 mt-0.5">In Progress</p>
             </div>
-            <div className="px-4 py-2.5 rounded-2xl bg-slate-900/80 border border-slate-800 text-center">
-              <span className="text-base font-black text-emerald-400">{myLearning?.completed.length || 0}</span>
-              <p className="text-[10px] uppercase font-semibold text-slate-400 mt-0.5">Completed</p>
+            <div className="px-4 py-2.5 rounded-2xl bg-black/20 backdrop-blur-md border border-white/20 text-center">
+              <span className="text-lg font-black text-emerald-300">{myLearning?.completed.length || 0}</span>
+              <p className="text-[10px] uppercase font-bold text-indigo-100 mt-0.5">Completed</p>
             </div>
           </div>
         </div>
@@ -362,17 +364,19 @@ export const LearningHubPage: React.FC<LearningHubPageProps> = ({ onNavigate, in
                     </button>
                   </div>
 
-                  {/* Multi-Creator Video Options */}
+                  {/* Multi-Creator Video Options (10-15 Options) */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        Choose Your Preferred YouTube Creator:
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                        Choose Your Preferred YouTube Creator ({item.recommended_videos?.length || 0} Options):
                       </p>
-                      <span className="text-[10px] text-slate-500">Pick the explanation style you connect with best</span>
+                      <span className="text-[10px] text-indigo-400 font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                        10-15 Verified Creator Videos
+                      </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {item.recommended_videos.slice(0, 3).map((video, vIdx) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[520px] overflow-y-auto pr-1">
+                      {item.recommended_videos.slice(0, 15).map((video, vIdx) => (
                         <div
                           key={vIdx}
                           className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between group"
@@ -889,21 +893,50 @@ export const LearningHubPage: React.FC<LearningHubPageProps> = ({ onNavigate, in
               </div>
             </div>
 
-            {/* Multiple Creators Video Options */}
+            {/* Multiple Creators Video Options (10 to 15 Curated Videos) */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-wider text-white">
-                    Recommended YouTube Creators ({selectedTopicDetail.videos.length})
+                    Recommended YouTube Creators ({selectedTopicDetail.videos.length} Videos Available)
                   </h3>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Choose your preferred creator and explanation style
+                    Filter by creator or explore diverse explanation styles:
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {selectedTopicDetail.videos.map((video) => (
+              {/* Creator Filter Chips Bar */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
+                {['All', ...Array.from(new Set(selectedTopicDetail.videos.map(v => v.channel_name)))].map(creator => {
+                  const isSelected = modalCreatorFilter === creator;
+                  const count = creator === 'All'
+                    ? selectedTopicDetail.videos.length
+                    : selectedTopicDetail.videos.filter(v => v.channel_name === creator).length;
+                  return (
+                    <button
+                      key={creator}
+                      onClick={() => setModalCreatorFilter(creator)}
+                      className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-600/30'
+                          : 'bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700/60'
+                      }`}
+                    >
+                      <span>{creator === 'All' ? '🌟 All Creators' : `🎥 ${creator}`}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(modalCreatorFilter === 'All'
+                  ? selectedTopicDetail.videos
+                  : selectedTopicDetail.videos.filter(v => v.channel_name === modalCreatorFilter)
+                ).map((video) => (
                   <div
                     key={video.id}
                     className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-blue-500/50 transition-all flex flex-col justify-between group"

@@ -628,8 +628,33 @@ def seed_database(db: Session):
 def seed_learning_topics_and_videos(db: Session):
     from ..services.youtube_service import YouTubeService
 
-    # Check if topics already seeded
+    # Check if topics already seeded; if so, backfill any missing videos up to 15 per topic
     if db.query(LearningTopic).count() > 0:
+        topics = db.query(LearningTopic).all()
+        for t in topics:
+            existing_vids = {v.video_id for v in t.videos}
+            if len(existing_vids) < 12:
+                fresh_videos = YouTubeService.get_videos_for_topic(t.slug, t.name, limit=15)
+                for fv in fresh_videos:
+                    if fv["video_id"] not in existing_vids:
+                        db_video = LearningVideo(
+                            topic_id=t.id,
+                            video_id=fv["video_id"],
+                            title=fv["title"],
+                            channel_name=fv["channel_name"],
+                            channel_avatar=fv.get("channel_avatar"),
+                            thumbnail_url=fv["thumbnail_url"],
+                            description=fv.get("description", ""),
+                            duration=fv.get("duration", "15:00"),
+                            difficulty=fv.get("difficulty", "Intermediate"),
+                            youtube_url=fv["youtube_url"],
+                            view_count=fv.get("view_count", "Verified"),
+                            teaching_style=fv.get("teaching_style", "Video Walkthrough")
+                        )
+                        db.add(db_video)
+                        existing_vids.add(fv["video_id"])
+        db.commit()
+        print("[OK] Existing learning topics updated with 12-15 multi-creator videos.")
         return
 
     TOPIC_DEFINITIONS = [
@@ -801,7 +826,7 @@ def seed_learning_topics_and_videos(db: Session):
         db.flush()
 
         # Fetch curated multi-creator videos
-        videos_meta = YouTubeService.get_videos_for_topic(item["slug"], item["name"], limit=4)
+        videos_meta = YouTubeService.get_videos_for_topic(item["slug"], item["name"], limit=15)
         for v in videos_meta:
             db_video = LearningVideo(
                 topic_id=topic.id,

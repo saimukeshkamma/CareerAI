@@ -2,6 +2,10 @@
 
 @layer base {
   :root {
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-script: 'Caveat', cursive;
+
     --bg-primary: #0a0f1d;
     --bg-secondary: #0f172a;
     --bg-card: rgba(15, 23, 42, 0.75);
@@ -10,6 +14,13 @@
     --accent-indigo: #6366f1;
     --accent-purple: #8b5cf6;
     --accent-cyan: #06b6d4;
+
+    /* JobMatch AI Reference Tokens */
+    --jobmatch-navy: #0b132b;
+    --jobmatch-dark: #1c2541;
+    --jobmatch-slate: #3a4e7a;
+    --jobmatch-primary: #4f46e5;
+    --jobmatch-rose: #f43f5e;
   }
 
   body {
@@ -24,10 +35,14 @@
       Roboto,
       Oxygen,
       Ubuntu,
-      Cantarell,
       sans-serif;
     overflow-x: hidden;
     min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 
   #root {
@@ -54,6 +69,43 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #334155;
   }
+}
+
+/* JobMatch AI Typography Utilities */
+.font-script {
+  font-family: 'Caveat', cursive !important;
+}
+
+.font-heading {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important;
+}
+
+/* JobMatch Hero Card Gradient */
+.card-gradient-hero {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+}
+
+/* JobMatch Sidebar Deep Space Navy */
+.sidebar-jobmatch {
+  background-color: #0b132b;
+}
+
+.sidebar-quote-card {
+  background-color: #1c2541;
+  border: 1px solid rgba(58, 78, 122, 0.45);
+}
+
+/* JobMatch Status & Pill Badges */
+.badge-rose {
+  background-color: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.badge-indigo {
+  background-color: rgba(79, 70, 229, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(79, 70, 229, 0.35);
 }
 
 .glass-card {

@@ -114,10 +114,10 @@ class LearningRecommendationService:
                 elif "docker" in q_text.lower():
                     reason = "Could not articulate multi-stage builds and container isolation benefits."
 
-                # Get multiple creator videos
+                # Get 10 to 15 multiple creator videos
                 video_list = []
-                if db_topic and db_topic.videos:
-                    for v in db_topic.videos[:4]:
+                if db_topic and db_topic.videos and len(db_topic.videos) >= 10:
+                    for v in db_topic.videos[:15]:
                         video_list.append({
                             "id": v.id,
                             "topic_id": db_topic.id,
@@ -134,8 +134,8 @@ class LearningRecommendationService:
                             "teaching_style": v.teaching_style
                         })
                 else:
-                    raw_videos = YouTubeService.get_videos_for_topic(matched_slug or "python-fundamentals", topic_display)
-                    for idx, rv in enumerate(raw_videos, start=1):
+                    raw_videos = YouTubeService.get_videos_for_topic(matched_slug or "python-fundamentals", topic_display, max_results=15)
+                    for idx, rv in enumerate(raw_videos[:15], start=1):
                         video_list.append({
                             "id": idx,
                             "topic_id": db_topic.id if db_topic else 1,
@@ -220,8 +220,8 @@ class LearningRecommendationService:
                 for w in db_weak:
                     slug = w.topic.slug if w.topic else (cls.match_topic_slug(w.topic_name) or "python-fundamentals")
                     vids = []
-                    if w.topic and w.topic.videos:
-                        for v in w.topic.videos[:4]:
+                    if w.topic and w.topic.videos and len(w.topic.videos) >= 10:
+                        for v in w.topic.videos[:15]:
                             vids.append({
                                 "id": v.id,
                                 "topic_id": w.topic.id,
@@ -238,7 +238,7 @@ class LearningRecommendationService:
                                 "teaching_style": v.teaching_style
                             })
                     else:
-                        vids = YouTubeService.get_videos_for_topic(slug, w.topic_name)
+                        vids = YouTubeService.get_videos_for_topic(slug, w.topic_name, max_results=15)
 
                     weak_topic_items.append({
                         "id": w.id,
@@ -273,7 +273,7 @@ class LearningRecommendationService:
                 skill_name = g["skill"]
                 matched_slug = cls.match_topic_slug(skill_name) or "docker-containerization"
                 db_t = db.query(LearningTopic).filter(LearningTopic.slug == matched_slug).first()
-                vids = YouTubeService.get_videos_for_topic(matched_slug, skill_name)
+                vids = YouTubeService.get_videos_for_topic(matched_slug, skill_name, max_results=15)
 
                 # Avoid duplicates
                 if not any(item["topic_name"].lower() == skill_name.lower() for item in weak_topic_items):

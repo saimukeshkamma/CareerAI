@@ -460,15 +460,18 @@ export const InterviewPage: React.FC<InterviewPageProps> = ({ onNavigate, initia
                       <span>Explore More Videos</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
-                  </div>
-
-                  {/* Multiple YouTube Creators Side-by-Side */}
+                             {/* Multiple YouTube Creators Side-by-Side (10-15 Recommended Choices) */}
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
-                      Choose Your Preferred Creator:
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {item.recommended_videos?.slice(0, 3).map((video, vIdx) => (
+                    <div className="flex items-center justify-between mb-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Choose Your Preferred Creator ({item.recommended_videos?.length || 0} Options Available):
+                      </p>
+                      <span className="text-[10px] text-indigo-400 font-semibold">
+                        Multi-Creator Recommendations (10-15 Videos)
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[460px] overflow-y-auto pr-1">
+                      {item.recommended_videos?.slice(0, 15).map((video, vIdx) => (
                         <div
                           key={vIdx}
                           className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-indigo-500/40 transition-all flex flex-col justify-between group"
@@ -522,7 +525,7 @@ export const InterviewPage: React.FC<InterviewPageProps> = ({ onNavigate, initia
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </div>            </div>
                 </div>
               ))}
             </div>

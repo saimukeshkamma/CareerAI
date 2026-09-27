@@ -1,4 +1,7 @@
+import logging
 from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 class AICareerAssistant:
     @classmethod
@@ -11,6 +14,51 @@ class AICareerAssistant:
         detected_skills: List[str] = None,
         missing_skills: List[str] = None
     ) -> Dict[str, Any]:
+        from ..services.groq_service import GroqService
+
+        # 1. Try Groq AI Generation for real-time dynamic intelligence
+        try:
+            skills_str = ", ".join(detected_skills[:6]) if detected_skills else "Python, Machine Learning, SQL"
+            missing_str = ", ".join(missing_skills[:4]) if missing_skills else "Docker, AWS, FastAPI"
+
+            sys_prompt = (
+                f"You are the senior CareerAI Assistant for a candidate named {user_name}. "
+                f"Their target career goal is: {target_role}. "
+                f"Their current resume score is {resume_score}/100. "
+                f"Demonstrated skills: {skills_str}. Missing/growth areas: {missing_str}. "
+                "Provide an authoritative, highly encouraging, actionable, and structured markdown response. "
+                "Use bullet points, bold key terms, and give concrete advice tailored to modern top-tier tech hiring."
+            )
+            groq_reply = GroqService.chat_completion(
+                messages=[
+                    {"role": "system", "content": sys_prompt},
+                    {"role": "user", "content": message}
+                ],
+                max_tokens=650,
+                temperature=0.6
+            )
+            if groq_reply and len(groq_reply.strip()) > 30:
+                # Dynamic suggestions & actions based on user message
+                msg_lower = message.lower()
+                suggestions = ["Recommend top YouTube tutorials", "Analyze my resume for ATS", "Practice mock interview questions"]
+                actions = [{"label": "Learning Hub", "route": "/learning"}, {"label": "Mock Interview", "route": "/interview"}]
+                if "interview" in msg_lower:
+                    suggestions = ["How do I explain trade-offs?", "Start technical mock interview", "STAR behavioral questions"]
+                    actions = [{"label": "Start AI Mock Interview", "route": "/interview"}, {"label": "View Learning Hub", "route": "/learning"}]
+                elif "skill" in msg_lower or "learn" in msg_lower:
+                    suggestions = ["Explore Backpropagation videos", "SQL joins masterclass", "Docker deployment tutorial"]
+                    actions = [{"label": "Open Learning Hub", "route": "/learning"}, {"label": "Skill Gap Analyzer", "route": "/skills"}]
+                elif "resume" in msg_lower:
+                    suggestions = ["Give me 3 bullet rewrites", "How do I beat ATS scanners?", "Improve project descriptions"]
+                    actions = [{"label": "Resume Analyzer", "route": "/resumes"}, {"label": "Browse Matched Jobs", "route": "/jobs"}]
+
+                return {
+                    "reply": groq_reply,
+                    "suggestions": suggestions,
+                    "recommended_actions": actions
+                }
+        except Exception as e:
+            logger.warning(f"Groq dynamic chat error, using expert rule-based engine: {e}")
         msg_lower = message.lower()
         skills_str = ", ".join(detected_skills[:5]) if detected_skills else "Python, Machine Learning, SQL"
         missing_str = ", ".join(missing_skills[:3]) if missing_skills else "Docker, AWS, FastAPI"

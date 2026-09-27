@@ -11,9 +11,10 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./careerai.db")
     DEMO_MODE: bool = os.getenv("DEMO_MODE", "true").lower() in ("true", "1", "yes")
-    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "demo")
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "groq")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     AI_API_KEY: str = os.getenv("AI_API_KEY", "")
-    AI_MODEL: str = os.getenv("AI_MODEL", "gpt-4o-mini")
+    AI_MODEL: str = os.getenv("AI_MODEL", "qwen/qwen3.8-27b")
 
     STORAGE_DIR: str = os.getenv("STORAGE_DIR", "uploads")
     MAX_UPLOAD_SIZE_MB: int = 10
@@ -28,6 +29,6 @@ class Settings(BaseSettings):
         "*"
     ]
 
-    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(case_sensitive=True, env_file=(".env", "backend/.env"), extra="ignore")
 
 settings = Settings()
